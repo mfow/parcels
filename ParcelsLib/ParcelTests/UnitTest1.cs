@@ -138,6 +138,8 @@ namespace ParcelTests
         [InlineData(11, 99, 7, 6, 15)]
         [InlineData(11, 99, 7, 10, 23)]
         [InlineData(11, 9, 101, 10, 25)]
+        [InlineData(11, 9, 101, 50, 50)]
+        [InlineData(11, 9, 101, 60, 60)]
         public void TestParcelsWithExtraWeight(double width, double height, double depth, double weight, decimal price)
         {
             var receipt = engine.ComputePrices(new List<Parcel>()

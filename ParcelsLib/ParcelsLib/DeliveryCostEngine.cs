@@ -49,6 +49,7 @@ namespace ParcelsLib
                 new DeliveryCategory() { DimensionMax = 50, Price = 8, Name = "medium", PricePerAdditionalKG = 2, MaxWeight = 3 },
                 new DeliveryCategory() { DimensionMax = 100, Price = 15, Name = "large", PricePerAdditionalKG = 2, MaxWeight = 6 },
                 new DeliveryCategory() { DimensionMax = double.MaxValue, Price = 25, Name = "xl", PricePerAdditionalKG = 2, MaxWeight = 10 },
+                new DeliveryCategory() { DimensionMax = double.MaxValue, Price = 50, Name = "heavy", PricePerAdditionalKG = 1, MaxWeight = 50 },
             };
 
             this.shippingRules = new Dictionary<ShippingSpeed, ShippingSpeedRule>();
