@@ -128,5 +128,32 @@ namespace ParcelTests
             Assert.Equal(receipt.Total, receipt.Subtotal + receipt.Shipping);
             Assert.Equal(price, receipt.Total);
         }
+
+        [Theory]
+        [InlineData(9, 8, 7, 1, 3)]
+        [InlineData(9, 8, 7, 2, 5)]
+        [InlineData(11, 9, 7, 2, 8)]
+        [InlineData(11, 9, 7, 4, 10)]
+        [InlineData(11, 11, 11, 2, 8)]
+        [InlineData(11, 99, 7, 6, 15)]
+        [InlineData(11, 99, 7, 10, 23)]
+        [InlineData(11, 9, 101, 10, 25)]
+        public void TestParcelsWithExtraWeight(double width, double height, double depth, double weight, decimal price)
+        {
+            var receipt = engine.ComputePrices(new List<Parcel>()
+            {
+                new Parcel()
+                {
+                    Id = Guid.NewGuid(),
+                    Width = width,
+                    Height = height,
+                    Depth = depth,
+                    Weight = weight
+                }
+            });
+
+            var p = Assert.Single(receipt.Parcels);
+            Assert.Equal(price, receipt.Total);
+        }
     }
 }
