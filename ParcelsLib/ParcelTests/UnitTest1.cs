@@ -20,7 +20,58 @@ namespace ParcelTests
             var receipt = engine.ComputePrices(new List<Parcel>());
 
             Assert.Empty(receipt.Parcels);
-            Assert.Equal(0, receipt.Total);
+            Assert.Equal(0, receipt.Subtotal);
+        }
+
+        [Fact]
+        public void TestPackageCollection1()
+        {
+            var receipt = engine.ComputePrices(new List<Parcel>()
+            {
+                new Parcel()
+                {
+                    // small 
+
+                    Id = Guid.NewGuid(),
+                    Width = 9,
+                    Height = 8,
+                    Depth = 7
+                },
+                new Parcel()
+                {
+                    // medium
+
+                    Id = Guid.NewGuid(),
+                    Width = 11,
+                    Height = 11,
+                    Depth = 11
+                },
+                new Parcel()
+                {
+                    // large
+
+                    Id = Guid.NewGuid(),
+                    Width = 100,
+                    Height = 9,
+                    Depth = 4
+                },
+                new Parcel()
+                {
+                    // xl
+
+                    Id = Guid.NewGuid(),
+                    Width = 101,
+                    Height = 11,
+                    Depth = 11
+                }
+            });
+
+            Assert.Equal(4, receipt.Parcels.Count);
+            Assert.Equal(3, receipt.Parcels[0].Price);
+            Assert.Equal(8, receipt.Parcels[1].Price);
+            Assert.Equal(15, receipt.Parcels[2].Price);
+            Assert.Equal(25, receipt.Parcels[3].Price);
+            Assert.Equal(3 + 8 + 15 + 25, receipt.Total);
         }
 
         [Theory]
@@ -51,6 +102,30 @@ namespace ParcelTests
 
             var p = Assert.Single(receipt.Parcels);
             Assert.Equal(category, p.PricingCategory);
+            Assert.Equal(price, receipt.Total);
+        }
+
+        [Theory]
+        [InlineData(9, 8, 7, 6)]
+        [InlineData(11, 9, 7, 16)]
+        [InlineData(11, 99, 7, 30)]
+        [InlineData(11, 101, 101, 50)]
+        public void TestSpeedyShippingPrice(double width, double height, double depth, decimal price)
+        {
+            var receipt = engine.ComputePrices(new List<Parcel>()
+            {
+                new Parcel()
+                {
+                    Id = Guid.NewGuid(),
+                    Width = width,
+                    Height = height,
+                    Depth = depth
+                }
+            }, ShippingSpeed.Speedy);
+
+            var p = Assert.Single(receipt.Parcels);
+            Assert.NotEqual(0, receipt.Shipping);
+            Assert.Equal(receipt.Total, receipt.Subtotal + receipt.Shipping);
             Assert.Equal(price, receipt.Total);
         }
     }

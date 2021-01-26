@@ -13,7 +13,9 @@ namespace ParcelsLib
         }
 
         public List<ParcelSubtotalItem> Parcels { get; set; } = new List<ParcelSubtotalItem>();
-        public decimal Total { get; set; } = 0;
+        public decimal Subtotal { get; set; } = 0;
+        public decimal Shipping { get; set; }
+        public decimal Total => Subtotal + Shipping;
         public Guid Id { get; set; } = Guid.NewGuid();
 
         public void AddParcel(Parcel p, string category, decimal price)
@@ -25,7 +27,7 @@ namespace ParcelsLib
                 Price = price
             });
 
-            this.Total += price;
+            this.Subtotal += price;
         }
     }
 }

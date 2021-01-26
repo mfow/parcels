@@ -25,7 +25,13 @@ namespace ParcelsLib
             }
         }
 
+        public class ShippingSpeedRule
+        {
+            public decimal SubtotalMultiplier { get; set; }
+        }
+
         private readonly List<DeliveryCategory> categories;
+        private readonly Dictionary<ShippingSpeed, ShippingSpeedRule> shippingRules;
 
         public DeliveryCostEngine()
         {
@@ -36,9 +42,13 @@ namespace ParcelsLib
                 new DeliveryCategory() { DimensionMax = 100, Price = 15, Name = "large" },
                 new DeliveryCategory() { DimensionMax = double.MaxValue, Price = 25, Name = "xl" },
             };
+
+            this.shippingRules = new Dictionary<ShippingSpeed, ShippingSpeedRule>();
+            this.shippingRules.Add(ShippingSpeed.Regular, new ShippingSpeedRule() { SubtotalMultiplier = 0 });
+            this.shippingRules.Add(ShippingSpeed.Speedy, new ShippingSpeedRule() { SubtotalMultiplier = 1 });
         }
 
-        public Receipt ComputePrices(IEnumerable<Parcel> parcels)
+        public Receipt ComputePrices(IEnumerable<Parcel> parcels, ShippingSpeed speed = ShippingSpeed.Regular)
         {
             var receipt = new Receipt();
 
@@ -48,6 +58,9 @@ namespace ParcelsLib
 
                 receipt.AddParcel(parcel, cheapestCategory.Name, cheapestCategory.Price);
             }
+
+            var shippingRule = shippingRules[speed];
+            receipt.Shipping = receipt.Subtotal * shippingRule.SubtotalMultiplier;
 
             return receipt;
         }
