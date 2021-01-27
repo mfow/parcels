@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ParcelsLib
 {
@@ -13,9 +14,12 @@ namespace ParcelsLib
         }
 
         public List<ParcelSubtotalItem> Parcels { get; set; } = new List<ParcelSubtotalItem>();
+        public IEnumerable<ParcelSubtotalItem> ParcelsNonDiscounted => Parcels.Where(x => !IsUsedInDiscounts(x.Item.Id));
+        public List<DiscountInfo> Discounts { get; set; } = new List<DiscountInfo>();
         public decimal Subtotal { get; set; } = 0;
         public decimal Shipping { get; set; }
-        public decimal Total => Subtotal + Shipping;
+        public decimal TotalDiscounts => Discounts.Select(x => x.DiscountAmount).Sum();
+        public decimal Total => Subtotal + Shipping - TotalDiscounts;
         public Guid Id { get; set; } = Guid.NewGuid();
 
         public void AddParcel(Parcel p, string category, decimal price)
@@ -28,6 +32,11 @@ namespace ParcelsLib
             });
 
             this.Subtotal += price;
+        }
+
+        public bool IsUsedInDiscounts(Guid parcelId)
+        {
+            return Discounts.Any(x => x.ParcelIds.Contains(parcelId));
         }
     }
 }

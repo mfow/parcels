@@ -41,6 +41,7 @@ namespace ParcelsLib
         private readonly List<DeliveryCategory> categories;
         private readonly Dictionary<ShippingSpeed, ShippingSpeedRule> shippingRules;
 
+        private readonly List<IDiscountRule> discountRules;
         public DeliveryCostEngine()
         {
             this.categories = new List<DeliveryCategory>()
@@ -55,6 +56,28 @@ namespace ParcelsLib
             this.shippingRules = new Dictionary<ShippingSpeed, ShippingSpeedRule>();
             this.shippingRules.Add(ShippingSpeed.Regular, new ShippingSpeedRule() { SubtotalMultiplier = 0 });
             this.shippingRules.Add(ShippingSpeed.Speedy, new ShippingSpeedRule() { SubtotalMultiplier = 1 });
+
+            this.discountRules = new List<IDiscountRule>()
+            {
+                new DiscountCheapestItemRule()
+                {
+                    CategoryNames = new List<string>() { "small" },
+                    DiscountName = "4th_small_item_free",
+                    RequiredItems = 4
+                },
+                new DiscountCheapestItemRule()
+                {
+                    CategoryNames = new List<string>() { "medium" },
+                    DiscountName = "3rd_medium_item_free",
+                    RequiredItems = 3
+                },
+                new DiscountCheapestItemRule()
+                {
+                    CategoryNames = new List<string>() { "small", "medium", "large", "xl", "heavy" },
+                    DiscountName = "5th_item_free",
+                    RequiredItems = 5
+                }
+            };
         }
 
         public Receipt ComputePrices(IEnumerable<Parcel> parcels, ShippingSpeed speed = ShippingSpeed.Regular)
@@ -71,10 +94,32 @@ namespace ParcelsLib
                 receipt.AddParcel(parcel, cheapestCategory.Item1, cheapestCategory.Item2);
             }
 
+            ApplyDiscounts(receipt);
+
             var shippingRule = shippingRules[speed];
             receipt.Shipping = receipt.Subtotal * shippingRule.SubtotalMultiplier;
-
+            
             return receipt;
+        }
+
+        private void ApplyDiscounts(Receipt receipt)
+        {
+            while (true)
+            {
+                var bestDiscount = discountRules.Select(x => x.GetDiscount(receipt))
+                    .Where(x => x != null)
+                    .OrderByDescending(x => x.DiscountAmount)
+                    .FirstOrDefault();
+
+                if (bestDiscount == null)
+                {
+                    return;
+                }
+                else
+                {
+                    receipt.Discounts.Add(bestDiscount);
+                }
+            }
         }
     }
 }

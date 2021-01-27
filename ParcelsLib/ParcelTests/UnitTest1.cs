@@ -74,6 +74,101 @@ namespace ParcelTests
             Assert.Equal(3 + 8 + 15 + 25, receipt.Total);
         }
 
+        [Fact]
+        public void TestPackageCollectionDiscounted1()
+        {
+            var receipt = engine.ComputePrices(new List<Parcel>()
+            {
+                new Parcel()
+                {
+                    // small 
+
+                    Id = Guid.NewGuid(),
+                    Width = 9,
+                    Height = 8,
+                    Depth = 7
+                },
+                new Parcel()
+                {
+                    // medium
+
+                    Id = Guid.NewGuid(),
+                    Width = 11,
+                    Height = 11,
+                    Depth = 11
+                },
+                new Parcel()
+                {
+                    // large
+
+                    Id = Guid.NewGuid(),
+                    Width = 100,
+                    Height = 9,
+                    Depth = 4
+                },
+                new Parcel()
+                {
+                    // xl
+
+                    Id = Guid.NewGuid(),
+                    Width = 101,
+                    Height = 11,
+                    Depth = 11
+                },
+                new Parcel()
+                {
+                    // xl
+
+                    Id = Guid.NewGuid(),
+                    Width = 102,
+                    Height = 11,
+                    Depth = 11
+                }
+            });
+
+            Assert.Equal(5, receipt.Parcels.Count);
+            Assert.Equal(3, receipt.Parcels[0].Price);
+            Assert.Equal(8, receipt.Parcels[1].Price);
+            Assert.Equal(15, receipt.Parcels[2].Price);
+            Assert.Equal(25, receipt.Parcels[3].Price);
+            Assert.Equal(3, receipt.TotalDiscounts);
+            Assert.Equal(8 + 15 + 25 + 25, receipt.Total);
+        }
+
+
+        [Theory]
+        [InlineData(1, 0)]
+        [InlineData(2, 0)]
+        [InlineData(3, 0)]
+        [InlineData(4, 1)]
+        [InlineData(5, 1)]
+        [InlineData(6, 1)]
+        [InlineData(7, 1)]
+        [InlineData(8, 2)] // test multiple discounts
+
+        public void TestPackageCollectionSmallDiscounts(int numSmallParcels, int numDiscounts)
+        {
+            var parcels = new List<Parcel>();
+
+            for (int i = 0; i < numSmallParcels; i++)
+            {
+                parcels.Add(new Parcel()
+                {
+                    // small 
+
+                    Id = Guid.NewGuid(),
+                    Width = 9,
+                    Height = 8,
+                    Depth = 7
+                });
+            }
+
+            var receipt = engine.ComputePrices(parcels, ShippingSpeed.Regular);
+
+            Assert.Equal(numSmallParcels, receipt.Parcels.Count);
+            Assert.Equal(3 * numDiscounts, receipt.TotalDiscounts);
+        }
+
         [Theory]
         [InlineData(9, 8, 7, 3, "small")]
         [InlineData(10, 9, 7, 3, "small")]
